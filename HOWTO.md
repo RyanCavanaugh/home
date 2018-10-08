@@ -22,6 +22,7 @@
 ## Suggestions
 
  * **Don't** just put `Suggestion` on a query (see "Debt" below). Must have a sublabel:
+   * `Experience Enhancement`: Uncontroversial improvements; PRs OK for this
    * `In Discussion`: Ready for analysis on our side
    * `Needs Proposal`: Has a worthwhile goal but doesn't outline how that would be accomplished
    * `Needs More Info`: Proposal lacks necessary information (usually around use cases)
