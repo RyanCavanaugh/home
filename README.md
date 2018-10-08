@@ -5,6 +5,7 @@
  * [Bugs with no Milestone](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+label%3Abug+no%3Amilestone+sort%3Acreated-asc)
  * [Bugs with no Assignee in 3.2 Milestone](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=no%3Aassignee++is%3Aissue+is%3Aopen+label%3Abug+sort%3Acreated-asc+milestone%3A%22TypeScript+3.2%22)
  * [Others with no Assignee in 3.2 Milestone](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=no%3Aassignee++is%3Aissue+is%3Aopen+-label%3Abug+sort%3Acreated-asc+milestone%3A%22TypeScript+3.2%22+)
+ * [Needs Investigation](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3A%22Needs+Investigation%22)
 
 ### Suggestions
  * [Slog Candidates](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3ASuggestion+label%3A%22In+Discussion%22)
