@@ -27,14 +27,20 @@
    * `Needs More Info`: Proposal lacks necessary information (usually around use cases)
    * `Too Complex`: Doesn't provide enough value relative to implementation or concept-count cost. Close.
    * `Out of Scope`: Not aligned with our core goals. Close.
+   * `Revisit`: Not now but possiby later if something else (usually TC39) changes. Close.
  * As time allows, run a slog
    * Pull ~40 candidates from the Slog Candidate query
    * A suggestion is slog-ready if we can:
      * Accurately describe it in a sentence or two
      * Produce a "yes or no" result with a few small bikeshed decisions
     * Write a single-sentence summary of each candidate. This is to both vet the suggestions for well-formedness and to familiarize yourself with the content
-  * **Drive for decisions** in this meeting! There should always be a new concrete next step on each item
+   * **Drive for decisions** in this meeting! There should always be a new concrete next step on each item
  * Interesting suggestions that need more discussion than a slog allows should go to the design meeting
 
 ## Debt
 
+ * Needs Investigation: Largely a block of ~200 issues we declared bankruptcy on in mid-2017. "Should" be treated as effectively unlabelled but we've assumed any high-pri issues here have been since re-bubbled.
+   * Needs to be handled eventually, but currently the lowest-priority work
+ * Needs Sublabel: Issues tagged "Suggestion" without any other label, so we don't know what state they're in.
+   * Work on paying this down
+   
