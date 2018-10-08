@@ -41,4 +41,4 @@
 
 # Meta
 
-(Issue Table Spreadsheet)[https://docs.google.com/spreadsheets/d/1csLYCg1X0ENwchb1VMtjL6Ka-mlXFjqxcpuRp6jmjSE/edit?usp=sharing]
+[Issue Table Spreadsheet](https://docs.google.com/spreadsheets/d/1csLYCg1X0ENwchb1VMtjL6Ka-mlXFjqxcpuRp6jmjSE/edit?usp=sharing)
