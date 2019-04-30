@@ -14,7 +14,7 @@
 ### PRs
 
  * [TypeScript](https://github.com/Microsoft/TypeScript/pulls?q=is%3Apr+is%3Aopen+sort%3Aupdated-desc)
- * [Ownerless](https://github.com/Microsoft/TypeScript/pulls?utf8=%E2%9C%93&q=is%3Apr+sort%3Aupdated-desc+-is%3Adraft+-label%3Aexperiment+no%3Aassignee+is%3A:open)
+ * [Ownerless](https://github.com/Microsoft/TypeScript/pulls?utf8=%E2%9C%93&q=is%3Apr+sort%3Aupdated-desc+-is%3Adraft+-label%3Aexperiment+no%3Aassignee+is%3Aopen)
 
 # Links
  * [DefinitelyTyped Status Board](https://github.com/DefinitelyTyped/DefinitelyTyped/projects/4?card_filter_query=is%3Aopen)
