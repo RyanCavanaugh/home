@@ -2,9 +2,9 @@
 
 ### Bugs
  * [Unlabelled Issues](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+no%3Alabel+sort%3Acreated-asc)
+ * [VS Code Priority](https://github.com/microsoft/TypeScript/labels/VS%20Code%20Priority)
  * [Bugs with no Milestone](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+label%3Abug+no%3Amilestone+sort%3Acreated-asc)
- * [Bugs with no Assignee in 3.3 Milestone](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=no%3Aassignee++is%3Aissue+is%3Aopen+label%3Abug+sort%3Acreated-asc+milestone%3A%22TypeScript+3.3%22)
- * [Others with no Assignee in 3.4.0 Milestone](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=no%3Aassignee++is%3Aissue+is%3Aopen+-label%3Abug+sort%3Acreated-asc+milestone%3A%22TypeScript+3.4.0%22+)
+ * [Bugs with no Assignee](https://github.com/Microsoft/TypeScript/issues?utf8=✓&q=no%3Aassignee+is%3Aissue+is%3Aopen+label%3Abug+sort%3Acreated-asc+-milestone%3A"Backlog")
  * [Unassigned Needs Investigation](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3A%22Needs+Investigation%22+no%3Aassignee)
 
 ### Suggestions
