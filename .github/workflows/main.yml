@@ -8,4 +8,4 @@ jobs:
     steps:
      - uses: RyanCavanaugh/issue-keyworder@master
        with:
-         token: ${{ secrets.AuthToken }}
+         token: ${{ secrets.GITHUB_TOKEN }}
