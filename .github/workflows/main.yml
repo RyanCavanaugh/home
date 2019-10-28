@@ -6,6 +6,6 @@ jobs:
   greet:
     runs-on: ubuntu-latest
     steps:
-     - uses: RyanCavanaugh/issue-keyworder@release
+     - uses: RyanCavanaugh/issue-keyworder@master
        with:
          token: ${{ secrets.AuthToken }}
