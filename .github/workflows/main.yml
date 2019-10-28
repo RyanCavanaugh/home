@@ -1,11 +1,11 @@
 name: Test
 
-on: [issue_comment]
+on: [issues]
 
 jobs:
   greet:
     runs-on: ubuntu-latest
     steps:
-     - uses: actions/hello-world-javascript-action@master
+     - uses: RyanCavanaugh/issue-keyworder@release
        with:
-         who-to-greet: 'Mona the Octocat'
+         token: ${{ secrets.AuthToken }}
