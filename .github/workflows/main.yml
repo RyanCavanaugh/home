@@ -9,3 +9,4 @@ jobs:
      - uses: RyanCavanaugh/issue-keyworder@master
        with:
          token: ${{ secrets.GITHUB_TOKEN }}
+         some_secret: ${{ secrets.TheSecretWord }}
