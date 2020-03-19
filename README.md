@@ -1,7 +1,7 @@
 # Triage Queries
 
 ### Bugs
- * [Unlabelled Issues](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+no%3Alabel+sort%3Acreated-asc)
+ * [Unlabelled Issues](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+no%3Alabel+sort%3Acreated-asc+no%3Aassignee)
  * [VS Code Priority](https://github.com/microsoft/TypeScript/labels/VS%20Code%20Priority)
  * [Bugs with no Milestone](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+label%3Abug+no%3Amilestone+sort%3Acreated-asc)
  * [Bugs with no Assignee](https://github.com/Microsoft/TypeScript/issues?utf8=✓&q=no%3Aassignee+is%3Aissue+is%3Aopen+label%3Abug+sort%3Acreated-asc+-milestone%3A"Backlog")
