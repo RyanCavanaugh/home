@@ -1,57 +1,51 @@
-name: Bug Report
-description: File a bug report
-title: "[Bug]: "
-labels: ["bug", "triage"]
-assignees:
-  - octocat
+name: Bug (Form-Based)
+description: Report a defect
+title: ""
+labels: []
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for providing your feedback! To help us out, please make sure you've checked
+        the FAQ, especially Common Bugs That Aren't Bugs.
   - type: input
-    id: contact
+    id: search
     attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
-    validations:
-      required: false
-  - type: textarea
-    id: what-happened
-    attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
-      placeholder: Tell us what you see!
-      value: "A bug happened!"
+      label: Search Terms
+      description: What search terms did you use when searching for duplicates? Putting these terms here will help future filers find this issue.
+      placeholder: 
     validations:
       required: true
-  - type: dropdown
+  - type: textarea
+    id: code-sample
+    attributes:
+      label: Please provide a self-contained code sample that demonstrates the problem
+      placeholder: let greeting = "Hello, world";
+      value: ""
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: What did you expect to happen, and why?
+      placeholder: No typechecking errors
+      value: ""
+    validations:
+      required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: What actually happened instead?
+      placeholder: Error on line 3
+      value: ""
+    validations:
+      required: true
+- type: input
     id: version
     attributes:
-      label: Version
-      description: What version of our software are you running?
-      options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
+      label: Did this behavior change at a particular version?
     validations:
       required: true
-  - type: dropdown
-    id: browsers
-    attributes:
-      label: What browsers are you seeing the problem on?
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Safari
-        - Microsoft Edge
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
   - type: checkboxes
     id: terms
     attributes:
