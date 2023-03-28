@@ -40,7 +40,7 @@ body:
       value: ""
     validations:
       required: true
-- type: input
+  - type: input
     id: version
     attributes:
       label: Did this behavior change at a particular version?
