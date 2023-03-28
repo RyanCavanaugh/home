@@ -1,6 +1,6 @@
 name: Bug Form-Based
 description: Report a defect
-title: " "
+title: "My Title"
 labels: []
 body:
   - type: markdown
