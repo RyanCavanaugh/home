@@ -7,19 +7,24 @@ body:
     attributes:
       value: |
         Module resolution can be very difficult to configure correctly!
+
         Be sure you've read the docs and asked for help in other places before filling out this form.
+
         Most module resolution bug reports are actually misconfigurations, so we require a thorough pre-investigation before we can look into any potential issues.
+
         Let's make sure you're ready to file a module resolution bug.
 
   - type: markdown
     attributes:
       value: |
         A module resolution bug requires five things:
+
         1. A module that's trying to import some target module
         2. That target module
         3. The configuration of the importing module
         4. The configuration of the target module
         5. A difference in runtime behavior
+
         You will also be required to post a cloneable repository.
 
   - type: input
@@ -47,9 +52,8 @@ body:
   - type: textarea
     id: code-proof
     attributes:
-      label: Demonstrate the defect described above with a code sample. This should be at most four lines of code.
-      placeholder: import * as foo from "./bar"; // Should not resovle
-      value: "code"
+      label: Demonstrate the defect described above with a code sample. This should be at most four lines of code, and come from your demo repo.
+      placeholder: import * as foo from "./bar"; // Should not resolve
     validations:
       required: true
 
