@@ -80,8 +80,7 @@ body:
     id: import-package-json
     attributes:
       label: Paste the `package.json` of the *importing* module, if it exists
-      placeholder: "{ }"
-      value: "code"
+      placeholder: "my_project/package.json"
     validations:
       required: true
 
@@ -89,7 +88,14 @@ body:
     id: export-package-json
     attributes:
       label: Paste the `package.json` of the *target* module, if it exists
-      placeholder: "{ }"
-      value: "code"
+      placeholder: "node_modules/somepkg/package.json"
+    validations:
+      required: true
+
+  - type: textarea
+    id: comments
+    attributes:
+      label: Any other comments can go here
+      placeholder: "Have a nice day!"
     validations:
       required: true
