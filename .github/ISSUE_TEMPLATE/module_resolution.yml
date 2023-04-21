@@ -49,7 +49,7 @@ body:
       label: tsconfig
       description: Run `tsc --showConfig` and paste the output here. |
                    Repros that depend on running within external tools (yarn, pnpm, esbuild, etc.) are not TypeScript defects and will not be investigated.
-      placeholder:
+      placeholder: ""
     validations:
       required: true
 
@@ -58,7 +58,7 @@ body:
     attributes:
       label: tsconfig
       description: Run `tsc --traceResolution` and paste the output here.
-      placeholder:
+      placeholder: ""
     validations:
       required: true
 
