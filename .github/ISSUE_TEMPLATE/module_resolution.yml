@@ -26,12 +26,13 @@ body:
         5. A difference in runtime behavior
 
         You will also be required to post a cloneable repository.
+        This repo must involve running `tsc`, not a third-party tool (e.g. vue-tsc, ngc, expo, ...)
 
   - type: input
     id: repo-url
     attributes:
       label: Demo Repo
-      description: Post a cloneable repo that reproduces the issue. We will run `npm`, `yarn`, or `pnpm` here, but will not invoke more complex build scripts.
+      description: Post a cloneable repo that reproduces the issue. We will run `npm`, `yarn`, or `pnpm` here, but will not invoke more complex build scripts or other build tools.
       placeholder: https://github.com/ghost/myrepro
     validations:
       required: true
