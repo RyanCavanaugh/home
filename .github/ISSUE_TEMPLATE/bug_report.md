@@ -1,38 +1,101 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+name: 'Bug report'
+description: 'Create a report to help us improve TypeScript'
+body:
+  - type: markdown
+    attributes:
+      value: Please fill in each section completely. Thank you!
+  - type: textarea
+    id: search_terms
+    attributes:
+      label: '🔎 Search Terms'
+      description: |
+        What search terms did you use when trying to find an existing bug report?
 
----
+        List them here so people in the future can find this one more easily.
+      placeholder: |
+        List of keywords you searched for before creating this issue. Write them down here so that others can find this bug more easily and help provide feedback.
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+        e.g. "function inference any", "jsx attribute spread", "move to file duplicate imports", "discriminated union inference", "ts2822"
+    validations:
+      required: true
+  - type: textarea
+    id: version_info
+    attributes:
+      label: '🕗 Version & Regression Information'
+      description: |
+        When did you start seeing this bug occur?
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+        "Bugs" that have existed in TS for a long time are very likely to be FAQs; please refer to the [FAQ wiki page](https://github.com/Microsoft/TypeScript/wiki/FAQ#common-bugs-that-arent-bugs).
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+        Please try the nightly version of TS to see if it's already been fixed. Install `typescript@next` or use the [Playground](http://www.typescriptlang.org/play/?ts=Nightly).
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+        If possible, try bisecting the issue using [every-ts](https://www.npmjs.com/package/every-ts#bisecting), which should narrow down the problem to a specific change.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+        The Playground also supports versions of TypeScript back to TypeScript 3.3.
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+        Please keep and fill in the line that best applies.
+      value: |
+        - This is a crash
+        - This changed between versions ______ and _______
+        - This changed in commit or PR _______
+        - This is the behavior in every version I tried, and I reviewed the FAQ for entries about _________
+        - I was unable to test this on prior versions because _______
+    validations:
+      required: true
+  - type: input
+    id: playground_link
+    attributes:
+      label: ⏯ Playground Link
+      description: |
+        A link to a TypeScript Playground "Share" link which shows this behavior.
 
-**Additional context**
-Add any other context about the problem here.
+        This should have the same code as the code snippet below, and use whichever settings are relevant to your report.
+
+        As a last resort, you can link to a repo, but these will be slower for us to investigate.
+      placeholder: 'Playground link with relevant code: https://www.typescriptlang.org/play?#code/PTAEFkE9QYwewCYFNQHM5IM6gBZIE5JA'
+    validations:
+      required: false
+  - type: textarea
+    id: code
+    attributes:
+      label: 💻 Code
+      description: |
+        Please post the relevant code sample here as well.
+
+        This code and the Playground code should be the same, do not use separate examples.
+
+        We can quickly address your report if:
+
+          - The code sample is short. Nearly all TypeScript bugs can be demonstrated in 20-30 lines of code!
+          - It doesn't use external libraries. These are often issues with the type definitions rather than TypeScript bugs.
+          - The incorrectness of the behavior is readily apparent from reading the sample.
+
+        Reports are slower to investigate if:
+
+          - We have to pare too much extraneous code.
+          - We have to clone a large repo and validate that the problem isn't elsewhere.
+          - The sample is confusing or doesn't clearly demonstrate what's wrong.
+      value: |
+        ```ts
+        // Your code here
+        ```
+    validations:
+      required: false
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: 🙁 Actual behavior
+      description: 'What happened, and why it was wrong.'
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: 🙂 Expected behavior
+      description: What you expected to happen instead, and why
+    validations:
+      required: true
+  - type: textarea
+    id: additional_info
+    attributes:
+      label: Additional information about the issue
