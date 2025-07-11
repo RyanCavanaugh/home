@@ -1,0 +1,31 @@
+{
+  "name": "get-repro",
+  "version": "1.0.0",
+  "description": "CLI utility to extract file contents from GitHub issues using Azure AI",
+  "main": "dist/index.js",
+  "bin": {
+    "get-repro": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cli",
+    "github",
+    "typescript",
+    "azure-ai"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^24.0.13",
+    "axios": "^1.10.0",
+    "commander": "^14.0.0",
+    "openai": "^5.9.0",
+    "typescript": "^5.8.3",
+    "zod": "^3.25.76"
+  }
+}
