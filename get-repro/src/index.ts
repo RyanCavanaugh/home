@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
+import { DefaultAzureCredential, getBearerTokenProvider } from "@azure/identity";
 import { Command } from 'commander';
 import axios from 'axios';
 import { z } from 'zod';
-import OpenAI from 'openai';
+import { AzureOpenAI } from 'openai';
 import * as fs from 'fs';
 import * as path from 'path';
+import { zodResponseFormat } from "openai/helpers/zod";
 
 // Zod schema for extracted files
 const FileContentSchema = z.object({
@@ -82,30 +84,15 @@ async function fetchGitHubIssue(issueUrl: string): Promise<{ body: string; title
 }
 
 async function extractFilesWithAzureAI(issueBody: string): Promise<ExtractedFiles> {
-  const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-  const apiKey = process.env.AZURE_OPENAI_API_KEY;
-  const deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4';
+  const endpoint = "https://ryanca-aoai.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview";
+  const credential = new DefaultAzureCredential();
+  const scope = "https://cognitiveservices.azure.com/.default";
+  const azureADTokenProvider = getBearerTokenProvider(credential, scope);
+  const apiVersion = "2025-01-01-preview";
+  const deployment = "gpt-4o-mini";
+  const options = { endpoint, azureADTokenProvider, deployment, apiVersion }
 
-  // Mock mode for testing without Azure AI
-  if (process.env.MOCK_AI === 'true') {
-    console.log('Running in mock mode (set MOCK_AI=false to use real Azure AI)...');
-    return extractFilesMockMode(issueBody);
-  }
-
-  if (!endpoint || !apiKey) {
-    throw new GetReproError(
-      'Azure OpenAI credentials not found. Please set AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY environment variables. Alternatively, set MOCK_AI=true for testing.'
-    );
-  }
-
-  const client = new OpenAI({
-    apiKey: apiKey,
-    baseURL: `${endpoint}/openai/deployments/${deploymentName}`,
-    defaultQuery: { 'api-version': '2024-08-01-preview' },
-    defaultHeaders: {
-      'api-key': apiKey,
-    },
-  });
+  const client = new AzureOpenAI(options);
 
   const systemPrompt = `You are a helpful assistant that extracts file contents from GitHub issue descriptions. 
 
@@ -138,13 +125,12 @@ IMPORTANT:
   try {
     console.log('Analyzing issue content with Azure AI...');
     const response = await client.chat.completions.create({
-      model: deploymentName,
+      model: "o1-mini",
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'user', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      max_tokens: 4000,
-      temperature: 0.1,
+      response_format:  zodResponseFormat(ExtractedFilesSchema, "files")
     });
 
     const content = response.choices[0]?.message?.content;

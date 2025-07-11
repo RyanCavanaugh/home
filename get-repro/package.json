@@ -21,6 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@azure/identity": "^4.10.2",
     "@types/node": "^24.0.13",
     "axios": "^1.10.0",
     "commander": "^14.0.0",
