@@ -4,7 +4,8 @@
   "description": "CLI utility to extract file contents from GitHub issues using Azure AI",
   "main": "dist/index.js",
   "bin": {
-    "get-repro": "dist/index.js"
+    "get-repro": "dist/index.js",
+    "repro-check": "dist/repro-check.js"
   },
   "scripts": {
     "build": "tsc",
