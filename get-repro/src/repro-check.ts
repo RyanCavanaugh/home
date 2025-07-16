@@ -393,9 +393,20 @@ async function analyzeMode(issueRef: string): Promise<void> {
 
 async function postMode(jsonFilePath: string): Promise<void> {
   try {
+    // Check if file exists
+    if (!fs.existsSync(jsonFilePath)) {
+      throw new ReproCheckError(`File not found: ${jsonFilePath}`);
+    }
+    
     // Read and parse the JSON file
     const jsonContent = fs.readFileSync(jsonFilePath, 'utf8');
-    const result = AnalyzeResultSchema.parse(JSON.parse(jsonContent));
+    let jsonData;
+    try {
+      jsonData = JSON.parse(jsonContent);
+    } catch (error) {
+      throw new ReproCheckError(`Invalid JSON in file ${jsonFilePath}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    const result = AnalyzeResultSchema.parse(jsonData);
     
     let markdownComment: string;
     
