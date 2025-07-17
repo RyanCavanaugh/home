@@ -1,6 +1,14 @@
 # get-repro
 
+A collection of CLI utilities for working with GitHub issues and TypeScript validation using Azure AI.
+
+## Tools
+
+### get-repro
 A CLI utility that extracts file contents from GitHub issues using Azure AI.
+
+### repro-check  
+A TypeScript issue reproduction validator that analyzes bugs and determines their current status.
 
 ## Features
 
@@ -20,6 +28,8 @@ npm run build
 
 ## Usage
 
+### get-repro
+
 ```bash
 # Basic usage
 get-repro https://github.com/microsoft/TypeScript/issues/12345
@@ -29,6 +39,38 @@ get-repro https://github.com/microsoft/TypeScript/issues/12345 -o ./extracted-fi
 
 # Or using npm script
 npm run dev -- https://github.com/microsoft/TypeScript/issues/12345
+```
+
+### repro-check
+
+Analyze and validate TypeScript issue reproduction status:
+
+```bash
+# Analyze an issue
+repro-check analyze microsoft/TypeScript#9998
+
+# Generate markdown comment from analysis
+repro-check post analysis-result.json
+```
+
+**Analyze Mode:**
+- Fetches GitHub issue and all comments
+- Uses AI to categorize the issue type
+- For testable issues: extracts files and runs TypeScript compiler
+- Outputs structured JSON with reproduction status
+
+**Post Mode:**
+- Reads analysis JSON output
+- Generates formatted markdown comments for GitHub
+- Provides clear recommendations for issue management
+
+**Example workflow:**
+```bash
+# Analyze issue and save results
+repro-check analyze microsoft/TypeScript#12345 > result.json
+
+# Generate comment for posting
+repro-check post result.json
 ```
 
 ## Configuration
