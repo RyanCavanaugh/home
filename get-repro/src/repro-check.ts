@@ -13,10 +13,22 @@ import { zodResponseFormat } from "openai/helpers/zod";
 
 // Zod schemas for analyze mode outputs
 const TestableReproSchema = z.object({
-  still_repros: z.boolean(),
-  files: z.record(z.string(), z.string()),
-  expected: z.string(),
-  actual: z.string()
+  bug_is_present: z.union([z.literal("yes"), z.literal("no"), z.literal("can't tell")]),
+  files: z.array(z.object({
+    filename: z.string(),
+    content: z.string()
+  })),
+  user_reported_behavior: z.string(),
+  expected_behavior: z.string(),
+  current_observed_behavior: z.string(),
+  command_line: z.string(),
+  tsc_version: z.string(),
+  compiler_output: z.object({
+    stdout: z.string(),
+    stderr: z.string(),
+    exit_code: z.number()
+  }),
+  reasoning: z.string()
 });
 
 const CannotReproSchema = z.object({
@@ -61,7 +73,7 @@ const IssueCategorySchema = z.object({
     "other"
   ]),
   reasoning: z.string(),
-  deprecated_features: z.array(z.string()).optional()
+  deprecated_features: z.array(z.string())
 });
 
 class ReproCheckError extends Error {
@@ -136,13 +148,13 @@ async function fetchGitHubIssue(issueRef: string): Promise<{ body: string; title
 }
 
 async function categorizeIssueWithAI(issue: { body: string; title: string; comments: string[] }): Promise<z.infer<typeof IssueCategorySchema>> {
-  const endpoint = "https://ryanca-aoai.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview";
+  const endpoint = "https://ryanca-aoai.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2025-01-01-preview";
   
   const credential = new DefaultAzureCredential();
   const scope = "https://cognitiveservices.azure.com/.default";
   const azureADTokenProvider = getBearerTokenProvider(credential, scope);
   const apiVersion = "2025-01-01-preview";
-  const deployment = "gpt-4o-mini";
+  const deployment = "gpt-4o";
   const options = { endpoint, azureADTokenProvider, deployment, apiVersion };
 
   const client = new AzureOpenAI(options);
@@ -168,13 +180,9 @@ Categorize the issue into one of these categories:
    - Memory usage issues
    - Build performance problems
 
-4. "deprecated_config" - The bug only applies to deprecated TypeScript configurations. Examples:
-   - strictNullChecks: false (or other strict flags being off)
-   - SystemJS, UMD, or AMD module output
-   - Target earlier than ES2015
-   - Other deprecated compiler options
-
 5. "other" - Anything else that doesn't fit the above categories
+
+Old typescript versions are NOT deprecated. Ignore comments claiming an issue is fixed; we're here to validate those comments.
 
 For deprecated_config issues, list the specific deprecated features involved.
 
@@ -191,7 +199,7 @@ ${issue.comments.length > 0 ? `Comments:\n${issue.comments.join('\n\n---\n\n')}`
   try {
     console.log('Categorizing issue with AI...');
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Please categorize this TypeScript issue:\n\n${issueContent}` }
@@ -213,20 +221,24 @@ ${issue.comments.length > 0 ? `Comments:\n${issue.comments.join('\n\n---\n\n')}`
   }
 }
 
-async function extractTestFilesWithAI(issueContent: string): Promise<{ files: Record<string, string> }> {
-  const endpoint = "https://ryanca-aoai.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview";
+async function extractTestFilesWithAI(issueContent: string): Promise<{ files: Array<{ filename: string; content: string }>; tsc_flags: string[] }> {
+  const endpoint = "https://ryanca-aoai.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2025-01-01-preview";
   
   const credential = new DefaultAzureCredential();
   const scope = "https://cognitiveservices.azure.com/.default";
   const azureADTokenProvider = getBearerTokenProvider(credential, scope);
   const apiVersion = "2025-01-01-preview";
-  const deployment = "gpt-4o-mini";
+  const deployment = "gpt-4o";
   const options = { endpoint, azureADTokenProvider, deployment, apiVersion };
 
   const client = new AzureOpenAI(options);
 
   const FilesExtractionSchema = z.object({
-    files: z.record(z.string(), z.string())
+    files: z.array(z.object({
+      filename: z.string(),
+      content: z.string()
+    })),
+    tsc_flags: z.array(z.string())
   });
 
   const systemPrompt = `You are an expert at extracting TypeScript test cases from bug reports.
@@ -236,6 +248,7 @@ Analyze the issue and extract the minimal set of files needed to reproduce the b
 1. TypeScript source files (.ts, .tsx, .d.ts) with the code that demonstrates the issue
 2. A tsconfig.json file with appropriate compiler settings
 3. Any other necessary files (package.json, etc.)
+4. Any additional tsc command line flags mentioned in the issue
 
 Guidelines:
 - Keep files minimal but complete enough to reproduce the issue
@@ -243,13 +256,16 @@ Guidelines:
 - Include only the essential compiler options in tsconfig.json
 - If the issue mentions specific compiler settings, include them
 - Make sure the code is syntactically valid TypeScript
+- Extract any command line flags mentioned (e.g., --noImplicitAny, --strict, etc.)
 
-Return a JSON object where keys are filenames and values are file contents.`;
+Return a JSON object with:
+- "files" array where each element has "filename" and "content" properties
+- "tsc_flags" array of additional command line flags to pass to tsc`;
 
   try {
     console.log('Extracting test files with AI...');
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Extract test files from this TypeScript issue:\n\n${issueContent}` }
@@ -262,7 +278,13 @@ Return a JSON object where keys are filenames and values are file contents.`;
       throw new ReproCheckError('No response from Azure AI for file extraction');
     }
 
-    return FilesExtractionSchema.parse(JSON.parse(content));
+    const parsed = FilesExtractionSchema.parse(JSON.parse(content));
+    console.log(parsed);
+
+    return {
+      files: parsed.files,
+      tsc_flags: parsed.tsc_flags || []
+    };
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new ReproCheckError(`Invalid file extraction response from AI: ${error.message}`);
@@ -271,12 +293,82 @@ Return a JSON object where keys are filenames and values are file contents.`;
   }
 }
 
-async function runTypeScriptCompiler(tempDir: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+async function initializeTypeScriptProject(tempDir: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    console.log('Initializing TypeScript project...');
+    
+    const isWindows = process.platform === 'win32';
+    const tsc = spawn('tsc', ['--init'], {
+      cwd: tempDir,
+      stdio: 'pipe',
+      shell: isWindows
+    });
+
+    let stderr = '';
+
+    tsc.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    tsc.on('error', (error) => {
+      reject(new ReproCheckError(`Failed to run tsc --init: ${error.message}. Make sure TypeScript is installed globally.`));
+    });
+
+    tsc.on('close', (code) => {
+      if (code !== 0) {
+        reject(new ReproCheckError(`tsc --init failed with exit code ${code}: ${stderr}`));
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+async function getTypeScriptVersion(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const isWindows = process.platform === 'win32';
+    const tsc = spawn('tsc', ['-v'], {
+      stdio: 'pipe',
+      shell: isWindows
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    tsc.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    tsc.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    tsc.on('error', (error) => {
+      reject(new ReproCheckError(`Failed to get TypeScript version: ${error.message}`));
+    });
+
+    tsc.on('close', (code) => {
+      if (code !== 0) {
+        reject(new ReproCheckError(`tsc -v failed with exit code ${code}: ${stderr}`));
+      } else {
+        resolve(stdout.trim());
+      }
+    });
+  });
+}
+
+async function runTypeScriptCompiler(tempDir: string, flags: string[] = []): Promise<{ stdout: string; stderr: string; exitCode: number; generatedFiles: string[] }> {
   return new Promise((resolve, reject) => {
     console.log('Running TypeScript compiler...');
     
-    const tsc = spawn('tsc', ['-p', tempDir], {
-      stdio: 'pipe'
+    // Build command arguments
+    const args = ['-p', tempDir, ...flags];
+    
+    // On Windows, we need to use shell: true or specify the .cmd extension
+    const isWindows = process.platform === 'win32';
+    const tsc = spawn('tsc', args, {
+      stdio: 'pipe',
+      shell: isWindows
     });
 
     let stdout = '';
@@ -295,13 +387,147 @@ async function runTypeScriptCompiler(tempDir: string): Promise<{ stdout: string;
     });
 
     tsc.on('close', (code) => {
+      // Get list of generated files
+      const generatedFiles: string[] = [];
+      try {
+        const files = fs.readdirSync(tempDir, { recursive: true });
+        for (const file of files) {
+          const filePath = typeof file === 'string' ? file : file.toString();
+          if (filePath.endsWith('.js') || filePath.endsWith('.d.ts') || filePath.endsWith('.js.map')) {
+            const fullPath = path.join(tempDir, filePath);
+            const content = fs.readFileSync(fullPath, 'utf8');
+            generatedFiles.push(`${filePath}:\n${content}`);
+          }
+        }
+      } catch (error) {
+        // Ignore errors reading generated files
+      }
+
       resolve({
         stdout,
         stderr,
-        exitCode: code || 0
+        exitCode: code || 0,
+        generatedFiles
       });
     });
   });
+}
+
+async function checkReproductionWithAI(
+  originalIssue: string,
+  compilerOutput: { stdout: string; stderr: string; exitCode: number; generatedFiles: string[] }
+): Promise<z.TypeOf<typeof ReproductionCheckSchema>> {
+  const endpoint = "https://ryanca-aoai.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2025-01-01-preview";
+  
+  const credential = new DefaultAzureCredential();
+  const scope = "https://cognitiveservices.azure.com/.default";
+  const azureADTokenProvider = getBearerTokenProvider(credential, scope);
+  const apiVersion = "2025-01-01-preview";
+  const deployment = "gpt-4o";
+  const options = { endpoint, azureADTokenProvider, deployment, apiVersion };
+
+  const client = new AzureOpenAI(options);
+
+  const ReproductionCheckSchema = z.object({
+    reasoning: z.string(),
+    user_reported_behavior: z.string(),
+    expected_behavior: z.string(),
+    current_observed_behavior: z.string(),
+    bug_is_present: z.union([z.literal("yes"), z.literal("no"), z.literal("can't tell")]),
+  });
+
+  const systemPrompt = `You are an expert TypeScript maintainer analyzing whether a bug report has been fixed by comparing the current compiler behavior with the original bug report.
+
+You will be given:
+1. The original bug report (describing expected vs user-reported actual behavior)
+2. The current TypeScript compiler output from testing the same scenario
+
+Your task is to analyze three distinct behaviors:
+- EXPECTED BEHAVIOR: What the user expected to happen (from the bug report)
+- USER-REPORTED ACTUAL BEHAVIOR: What the user observed that was wrong (from the bug report)  
+- CURRENT OBSERVED BEHAVIOR: What happens now when we run the same test (from compiler output)
+
+Determine if the bug has been fixed by comparing these behaviors:
+
+A bug is FIXED (bug_is_present: no) if:
+- Current observed behavior matches the expected behavior
+- The problematic user-reported behavior no longer occurs
+
+A bug STILL EXISTS (bug_is_present: yes) if:
+- Current observed behavior matches the user-reported actual behavior
+- Current observed behavior differs from expected behavior in the same way as originally reported
+
+You CAN'T TELL if:
+- the repro is malformed in a way that prevents clear analysis
+- the repro isn't observable based on the compiler output
+
+Return:
+- bug_is_present: true if the bug still exists, false if it has been fixed
+- user_reported_behavior: the problematic behavior that the user originally reported (what was wrong)
+- expected_behavior: the correct/expected behavior described in the bug report (what should happen)
+- current_observed_behavior: the current behavior observed from today's compiler output (what actually happens now). DON'T READ THE CODE COMMENTS TO DETERMINE THIS!!!
+- reasoning: your reasoning for the determination
+
+Make sure to derive current_observed_behavior from empirical behavior.
+You may need to reason about the presence or absence of errors or information in the error message to determine the correct result; not all bug reports are about an error being present.
+If the bug report says that there SHOULD BE AN ERROR and you DO SEE THAT ERROR, then the bug is fixed.
+`;
+
+  const compilerOutputText = `
+Exit Code: ${compilerOutput.exitCode}
+
+Stdout:
+${compilerOutput.stdout || '(empty)'}
+
+Stderr:
+${compilerOutput.stderr || '(empty)'}
+
+Generated Files:
+${compilerOutput.generatedFiles.length > 0 ? compilerOutput.generatedFiles.join('\n\n') : '(none)'}
+`;
+  console.log(compilerOutputText);
+
+  try {
+    console.log('Checking reproduction with AI...');
+    const response = await client.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Analyze this bug report and current compiler output to determine if the bug has been fixed:
+
+<original_bug_report>
+${originalIssue}
+</original_bug_report>
+
+<current_compiler_output>
+${compilerOutputText}
+</current_compiler_output>
+
+Remember that the comments in the original bug report are from WHEN THE BUG WAS FILED, so you shouldn't rely on those comments to determine truth.
+Only the current compiler output is relevant as a source of truth for the current behavior.
+DON'T READ COMMENTS IN THE ORIGINAL BUG REPORT TO DETERMINE CURRENT BEHAVIOR.
+
+Please identify:
+1. Expected behavior (what should happen)
+2. User-reported actual behavior (what was wrong originally) 
+3. Current observed behavior (what happens now)
+4. Whether the current behavior indicates the bug is fixed or still exists` }
+      ],
+      response_format: zodResponseFormat(ReproductionCheckSchema, "reproduction_check")
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new ReproCheckError('No response from Azure AI for reproduction check');
+    }
+
+    return ReproductionCheckSchema.parse(JSON.parse(content));
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new ReproCheckError(`Invalid reproduction check response from AI: ${error.message}`);
+    }
+    throw error;
+  }
 }
 
 async function analyzeMode(issueRef: string): Promise<void> {
@@ -345,29 +571,49 @@ async function analyzeMode(issueRef: string): Promise<void> {
         const issueContent = `Title: ${issue.title}\n\nBody: ${issue.body}\n\n${issue.comments.join('\n\n')}`;
         const extracted = await extractTestFilesWithAI(issueContent);
         
+        // Get TypeScript version
+        const tscVersion = await getTypeScriptVersion();
+        
+        // Build command line string
+        const commandLine = `tsc -p . ${extracted.tsc_flags.join(' ')}`.trim();
+        
         // Create temporary directory
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'repro-check-'));
         
         try {
+          // Initialize TypeScript project first
+          await initializeTypeScriptProject(tempDir);
+          
           // Write files to temp directory
-          for (const [filename, content] of Object.entries(extracted.files)) {
-            const filePath = path.join(tempDir, filename);
-            fs.writeFileSync(filePath, content, 'utf8');
+          for (const file of extracted.files) {
+            const filePath = path.join(tempDir, file.filename);
+            const dirPath = path.dirname(filePath);
+            if (!fs.existsSync(dirPath)) {
+              fs.mkdirSync(dirPath, { recursive: true });
+            }
+            fs.writeFileSync(filePath, file.content, 'utf8');
           }
           
-          // Run TypeScript compiler
-          const compileResult = await runTypeScriptCompiler(tempDir);
+          // Run TypeScript compiler with extracted flags
+          const compileResult = await runTypeScriptCompiler(tempDir, extracted.tsc_flags);
           
-          // Analyze results to determine if bug still reproduces
-          const hasErrors = compileResult.exitCode !== 0 || compileResult.stderr.trim() !== '';
+          // Use AI to analyze if the bug reproduces
+          const reproductionResult = await checkReproductionWithAI(issueContent, compileResult);
           
           result = {
-            still_repros: hasErrors,
+            bug_is_present: reproductionResult.bug_is_present,
             files: extracted.files,
-            expected: "The code should compile without errors",
-            actual: hasErrors 
-              ? `Compilation failed with exit code ${compileResult.exitCode}. Stderr: ${compileResult.stderr.trim()}`
-              : "Code compiled successfully"
+            user_reported_behavior: reproductionResult.user_reported_behavior,
+            expected_behavior: reproductionResult.expected_behavior,
+            current_observed_behavior: reproductionResult.current_observed_behavior,
+            command_line: commandLine,
+            tsc_version: tscVersion,
+            compiler_output: {
+              stdout: compileResult.stdout,
+              stderr: compileResult.stderr,
+              exit_code: compileResult.exitCode
+            },
+            reasoning: reproductionResult.reasoning
           };
         } finally {
           // Clean up temp directory
@@ -379,7 +625,10 @@ async function analyzeMode(issueRef: string): Promise<void> {
         throw new ReproCheckError(`Unknown category: ${category.category}`);
     }
 
-    // Output JSON to stdout
+    // Write JSON to file named [issuenumber].json
+    const outputFilename = `${issue.number}.json`;
+    fs.writeFileSync(outputFilename, JSON.stringify(result, null, 2), 'utf8');
+    console.log(`Analysis complete. Results written to ${outputFilename}`);
     console.log(JSON.stringify(result, null, 2));
     
   } catch (error) {
@@ -410,41 +659,101 @@ async function postMode(jsonFilePath: string): Promise<void> {
     
     let markdownComment: string;
     
-    if ('still_repros' in result) {
+    if ('bug_is_present' in result) {
       // Testable issue
-      if (result.still_repros) {
+      const compilerDetails = `
+**Command:** \`${result.command_line}\`
+**TypeScript Version:** ${result.tsc_version}
+**Exit Code:** ${result.compiler_output.exit_code}
+
+<details>
+<summary>Compiler Output</summary>
+
+**Stdout:**
+\`\`\`
+${result.compiler_output.stdout || '(empty)'}
+\`\`\`
+
+**Stderr:**
+\`\`\`
+${result.compiler_output.stderr || '(empty)'}
+\`\`\`
+</details>`;
+
+      if (result.bug_is_present === 'yes') {
         markdownComment = `## Reproduction Confirmed ✅
 
 I was able to reproduce this issue using the following test case:
 
-${Object.entries(result.files).map(([filename, content]) => 
-  `**${filename}:**
-\`\`\`${filename.endsWith('.json') ? 'json' : 'typescript'}
-${content}
+${result.files.map(file => 
+  `**${file.filename}:**
+\`\`\`${file.filename.endsWith('.json') ? 'json' : 'typescript'}
+${file.content}
 \`\`\``
 ).join('\n\n')}
 
-**Expected:** ${result.expected}
-**Actual:** ${result.actual}
+${compilerDetails}
+
+**What you observed in the bug report:** ${result.user_reported_behavior}
+**What you expected:** ${result.expected_behavior}
+**What I observed when running tsc:** ${result.current_observed_behavior}
+
+My reasoning:
+> ${result.reasoning}
 
 This issue is still present and should remain open.`;
-      } else {
+      } else if (result.bug_is_present === 'no') {
         markdownComment = `## Unable to Reproduce ❌
 
 I attempted to reproduce this issue but could not confirm it still exists.
 
 Test case used:
-${Object.entries(result.files).map(([filename, content]) => 
-  `**${filename}:**
-\`\`\`${filename.endsWith('.json') ? 'json' : 'typescript'}
-${content}
+${result.files.map(file => 
+  `**${file.filename}:**
+\`\`\`${file.filename.endsWith('.json') ? 'json' : 'typescript'}
+${file.content}
 \`\`\``
 ).join('\n\n')}
 
-**Expected:** ${result.expected}
-**Actual:** ${result.actual}
+${compilerDetails}
 
-This issue may have been fixed in a recent version. Consider closing unless there are additional reproduction steps.`;
+**What you observed in the bug report:** ${result.user_reported_behavior}
+**What you expected:** ${result.expected_behavior}
+**What I observed when running tsc:** ${result.current_observed_behavior}
+
+My reasoning:
+> ${result.reasoning}
+`;
+      } else if (result.bug_is_present === "can't tell") {
+        markdownComment = `## Unclear Result ⚠️
+
+I attempted to analyze this issue but could not make a clear determination about whether it still exists.
+
+Test case used:
+${result.files.map(file => 
+  `**${file.filename}:**
+\`\`\`${file.filename.endsWith('.json') ? 'json' : 'typescript'}
+${file.content}
+\`\`\``
+).join('\n\n')}
+
+${compilerDetails}
+
+**What you observed in the bug report:** ${result.user_reported_behavior}
+**What you expected:** ${result.expected_behavior}
+**What I observed when running tsc:** ${result.current_observed_behavior}
+
+My reasoning:
+> ${result.reasoning}
+
+This issue requires manual review to determine its current status.`;
+      } else {
+        // This should never happen due to the union type, but adding for safety
+        markdownComment = `## Unknown Status ❓
+
+An unexpected bug status was encountered: ${result.bug_is_present}
+
+This requires manual review.`;
       }
     } else if ('cannot_repro' in result) {
       markdownComment = `## Cannot Validate ⚠️
