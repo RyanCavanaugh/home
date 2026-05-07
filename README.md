@@ -9,7 +9,8 @@
 
 ### Corsa
  * [No Milestone](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20no%3Amilestone)
- * [7.0, No Assignee](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20milestone%3A%22TypeScript%207.0%20RC%22)
+ * [7.0 RC](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20milestone%3A%22TypeScript%207.0%20RC%22)
+ * [7.0, No Assignee](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20milestone%3A%22TypeScript%207.0%20RC%22%20no%3Aassignee)
 
 ### Suggestions
  * [Slog Candidates](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3ASuggestion+label%3A%22In+Discussion%22)
