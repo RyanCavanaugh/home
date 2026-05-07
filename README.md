@@ -8,9 +8,10 @@
  * [Unassigned Needs Investigation](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3A%22Needs+Investigation%22+no%3Aassignee)
 
 ### Corsa
- * [No Milestone](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20no%3Amilestone)
- * [7.0 RC](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20milestone%3A%22TypeScript%207.0%20RC%22)
- * [7.0, No Assignee](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20milestone%3A%22TypeScript%207.0%20RC%22%20no%3Aassignee)
+ * [Issues: No Milestone](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20no%3Amilestone)
+ * [Issues: 7.0 RC](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20milestone%3A%22TypeScript%207.0%20RC%22)
+ * [Issues: 7.0, No Assignee](https://github.com/microsoft/typescript-go/issues?q=is%3Aissue%20state%3Aopen%20milestone%3A%22TypeScript%207.0%20RC%22%20no%3Aassignee)
+ * [PRs: No Milestone](https://github.com/microsoft/typescript-go/pulls?q=is%3Apr+is%3Aopen+-is%3Adraft+no%3Amilestone)
 
 ### Suggestions
  * [Slog Candidates](https://github.com/Microsoft/TypeScript/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc+label%3ASuggestion+label%3A%22In+Discussion%22)
